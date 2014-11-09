@@ -1,0 +1,9 @@
+html {
+  background : rgba(50,50,50,1)
+}
+
+.backface{
+    backface-visibility : visible !important;
+    -webkit-backface-visibility: visible !important;
+}
+
