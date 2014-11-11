@@ -7,3 +7,6 @@ html {
     -webkit-backface-visibility: visible !important;
 }
 
+.famous-scrollable {
+    overflow-y: scroll;
+}

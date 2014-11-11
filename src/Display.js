@@ -3,12 +3,14 @@ var Surface = require('famous/core/Surface');
 var Transform = require('famous/core/Transform');
 var Modifier = require('famous/core/Modifier');
 var ScrollView = require('famous/views/ScrollView');
+var NativeScroller = require('./NativeScroller');
 //display which lets you traverse content which you can push to. 
 
 function Display() {
     View.apply(this, arguments);
 
     this._rootModifier = new Modifier({
+      size: [50, 200],
       origin: [0.5, 0.5],
       align: [0.5, 0.5],
       transform: Transform.translate(100, 200, 0)
@@ -27,13 +29,10 @@ Display.prototype.constructor = Display;
 Display.DEFAULT_OPTIONS = {};
 
 function _createScroller() {
-  this._scrollview = new ScrollView({
-    size : [200, 300]
-  });
-  this._scrollview.outputFrom(function(offset){
-    // console.log(offset);
-    return Transform.translate(0, Math.pow(offset, 0.5), -Math.abs(Math.pow(offset, 1.1)));
-  });
+  this._scrollview = new NativeScroller({ direction: 1});
+  // this._scrollview.outputFrom(function(offset){
+  //   return Transform.translate(0, offset, -Math.abs(offset) + 20);
+  // });
   this._rootNode.add(this._scrollview);
 }
 
@@ -49,7 +48,7 @@ function _createScrollerContent() {
         backgroundColor : 'red'
       }
     });
-    surface.pipe(this._scrollview);
+    // surface.pipe(this._scrollview);
     surfaces.push(surface);
   }
   this._scrollview.sequenceFrom(surfaces);

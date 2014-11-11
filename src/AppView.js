@@ -39,7 +39,7 @@ function AppView() {
     this._rootNode = this.add(this._rootModifier);
     
     _createBackground.call(this);
-    // _createDisplay.call(this);
+    _createDisplay.call(this);
     _createKeyboard.call(this);  
     _createCalculatorBase.call(this);
     _bindEvents.call(this);
