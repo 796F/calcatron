@@ -42,6 +42,7 @@ define(function(require, exports, module) {
         this._scrollableEl;
         this.on('deploy', function () {
             this._scrollableEl = this._currentTarget;
+            this._scrollableEl.onscroll = this._handleScroll.bind(this);
         }.bind(this));
 
         this._sequence = new SequentialLayout({
@@ -58,6 +59,11 @@ define(function(require, exports, module) {
 
     NativeScrollview.prototype = Object.create(ContainerSurface.prototype);
     NativeScrollview.prototype.constructor = NativeScrollview;
+
+    // START FROM HERE
+    NativeScrollview.prototype._handleScroll = function _handleScroll() {
+        console.log(this._scrollableEl.scrollTop);
+    }
 
      /**
      * Before rendering, nativeScroll updates scroll position if animating.
