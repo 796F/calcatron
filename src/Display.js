@@ -10,10 +10,10 @@ function Display() {
     View.apply(this, arguments);
 
     this._rootModifier = new Modifier({
-      size: [50, 200],
+      size: [200, 150],
       origin: [0.5, 0.5],
       align: [0.5, 0.5],
-      transform: Transform.translate(100, 200, 0)
+      transform: Transform.translate(0, -120, 0)
     });
     this._rootNode = this.add(this._rootModifier);
 
