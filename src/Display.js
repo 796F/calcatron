@@ -15,6 +15,8 @@ function Display() {
     });
     this._rootNode = this.add(this._rootModifier);
 
+    //add container surface 
+
     _createScroller.call(this);
     _createScrollerContent.call(this);
 }

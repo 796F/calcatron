@@ -38,11 +38,11 @@ function AppView() {
     
     this._rootNode = this.add(this._rootModifier);
     
-    // _createBackground.call(this);
-    _createDisplay.call(this);
-    // _createKeyboard.call(this);  
-    // _createCalculatorBase.call(this);
-    // _bindEvents.call(this);
+    _createBackground.call(this);
+    // _createDisplay.call(this);
+    _createKeyboard.call(this);  
+    _createCalculatorBase.call(this);
+    _bindEvents.call(this);
 }
 
 AppView.prototype = Object.create(View.prototype);
