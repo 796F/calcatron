@@ -46,6 +46,7 @@ function Key() {
     this._rotationTransitionable = new Transitionable([0, 0, 0]);
     // this._anchorTransition = new SpringTransition(this.options.position);
 
+    _createRippleLayer.call(this);
     _createMiddleLayer.call(this);
     _createFrontLayer.call(this);
     _createBackLayer.call(this);
@@ -60,6 +61,13 @@ Key.prototype.constructor = Key;
 Key.DEFAULT_OPTIONS = {
   radius : 20,
   position : new Vector(0, 0, 0),
+  propertiesRipple : {
+    border : '1px solid rgba(107,203,255,1)',
+    '-webkit-box-shadow' : '0px 0px 3px 1px rgba(107,203,255,1)',
+    color : 'rgba(107,203,255,1)',
+    backgroundColor : 'rgba(50,50,50,1)',
+    borderRadius : '50%',
+  },
   propertiesMiddle : {
     border : '1px solid rgba(107,203,255,1)',
     '-webkit-box-shadow' : '0px 0px 3px 1px rgba(107,203,255,1)',
@@ -79,6 +87,7 @@ Key.DEFAULT_OPTIONS = {
   opacity : 0.4,
   classesMiddle : ['backface'],
   classesContent : ['backface'],
+  classesRipple : ['backface'],
   frontContent: 'O',
   backContent: 'X'
 };
@@ -135,6 +144,15 @@ function _createBackLayer() {
   });
   this.back.pipe(this.sync);
   this._rootNode.add(backModifier).add(this.back);
+}
+
+function _createRippleLayer() {
+  this.ripple = new Surface({
+    size : [0, 0],
+    properties : this.options.propertiesRipple,
+    classes : this.options.classesRipple
+  });
+  this._rootNode.add(this.ripple);
 }
 
 function _bindEvents() {

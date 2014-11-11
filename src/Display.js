@@ -9,9 +9,10 @@ function Display() {
     View.apply(this, arguments);
 
     this._rootModifier = new Modifier({
+      size: [50, 50],
       origin: [0.5, 0.5],
       align: [0.5, 0.5],
-      transform: Transform.translate(100, 200, 0)
+      // transform: Transform.translate(100, 200, 0)
     });
     this._rootNode = this.add(this._rootModifier);
 
@@ -27,12 +28,10 @@ Display.prototype.constructor = Display;
 Display.DEFAULT_OPTIONS = {};
 
 function _createScroller() {
-  this._scrollview = new ScrollView({
-    size : [200, 300]
-  });
+  this._scrollview = new ScrollView();
   this._scrollview.outputFrom(function(offset){
-    // console.log(offset);
-    return Transform.translate(0, Math.pow(offset, 0.5), -Math.abs(Math.pow(offset, 1.1)));
+    // return Transform.translate(0, Math.pow(offset, 0.5), -Math.abs(Math.pow(offset, 1.1)));
+    return Transform.translate(0, offset, -Math.abs(Math.pow(offset, 1.5)));
   });
   this._rootNode.add(this._scrollview);
 }
