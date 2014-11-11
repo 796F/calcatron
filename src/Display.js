@@ -29,10 +29,10 @@ Display.prototype.constructor = Display;
 Display.DEFAULT_OPTIONS = {};
 
 function _createScroller() {
-  this._scrollview = new NativeScroller({ direction: 1});
-  // this._scrollview.outputFrom(function(offset){
-  //   return Transform.translate(0, offset, -Math.abs(offset) + 20);
-  // });
+  this._scrollview = new NativeScroller({ direction: 1, size: [50, 200] });
+  this._scrollview.layoutFn = function(modifier, offset){
+    modifier.setTransform(Transform.translate(0, 0, -Math.abs(offset)));
+  };
   this._rootNode.add(this._scrollview);
 }
 

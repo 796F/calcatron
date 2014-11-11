@@ -1,17 +1,11 @@
 define(function(require, exports, module) {
-    var SequentialLayout    = require('famous/views/SequentialLayout');
+    // var SequentialLayout    = require('famous/views/SequentialLayout');
+    var CustomSequence      = require('./CustomSequence');
     var Transitionable      = require('famous/transitions/Transitionable');
     var ContainerSurface    = require('famous/surfaces/ContainerSurface');
     var Transform           = require('famous/core/Transform');
     var OptionsManager      = require('famous/core/OptionsManager');
     var Utility             = require('famous/utilities/Utility');
-
-    // NOTE: This class in its current state will only 
-    // work with appMode disabled like so:
-    //
-    // Engine.setOptions({
-    //     appMode: false
-    // });
 
     /**
      * Manages and manipulates an underlying DOM element to provide native
@@ -36,16 +30,23 @@ define(function(require, exports, module) {
         this._animatingX = false;
         this._animatingY = false;
 
+        this._cachedSize = options.size;
+
         this._scrollX = new Transitionable(0);
         this._scrollY = new Transitionable(0);
+
+        this.layoutFn = options.layoutFn;
 
         this._scrollableEl;
         this.on('deploy', function () {
             this._scrollableEl = this._currentTarget;
             this._scrollableEl.onscroll = this._handleScroll.bind(this);
+            this._handleScroll();
         }.bind(this));
 
-        this._sequence = new SequentialLayout({
+        this.context.setPerspective(1000);
+
+        this._sequence = new CustomSequence({
             direction: this.options.direction
         });
 
@@ -60,9 +61,16 @@ define(function(require, exports, module) {
     NativeScrollview.prototype = Object.create(ContainerSurface.prototype);
     NativeScrollview.prototype.constructor = NativeScrollview;
 
-    // START FROM HERE
     NativeScrollview.prototype._handleScroll = function _handleScroll() {
-        console.log(this._scrollableEl.scrollTop);
+        var scrollCenter = this._scrollableEl.scrollTop + this._cachedSize[1] * 0.5;
+        var positions = this._sequence._posCache;
+        var mods      = this._sequence._mods;
+
+        if(this.layoutFn) {
+            for (var i = 0; i < positions.length; i++) {
+                this.layoutFn(mods[i], scrollCenter - positions[i]);
+            }
+        }
     }
 
      /**
