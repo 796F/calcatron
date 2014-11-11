@@ -64,6 +64,7 @@ function _createBackground() {
   this._background = new Surface({
     size: [undefined, undefined]
   });
+
   this._background.pipe(this.sync);
   this.add(this._background);
 }
@@ -72,11 +73,18 @@ function _createCalculatorBase() {
   this._prism = new Prism({
     dimensions: [250, 450, 10]
   });
-  this._rootNode.add(this._prism)
-
+  this._rootNode.add(this._prism);
+  
 
   this._boundingBox = new Prism({
-    dimensions: [200, 150, 4]
+    dimensions: [200, 150, 10],
+    properties : {
+      border : '2px solid rgba(107,203,255,1)',
+      '-webkit-box-shadow' : '0px 0px 1px 1px rgba(107,203,255,1)',
+      pointerEvents : 'none',
+      backgroundColor: 'rgba(50,50,50,1)'
+    },
+    opacity : 1,
   });
 
   this._boxModifier = new Modifier({
@@ -93,11 +101,17 @@ function _createDisplay() {
 
 function _createKeyboard() {
   this._keyboard = new Keyboard();
+
+
   this._rootNode.add(this._keyboard);
 }
 
 function _bindEvents() {
     var self = this;
+
+    self.sync.on('start', function(data) {
+      // console.log('start', data.clientX, data.clientY);
+    });
 
     self.sync.on('update', function(data) {
       var old_rotation = self._rotationTransitionable.get();
@@ -105,6 +119,7 @@ function _bindEvents() {
     });
 
     self.sync.on('end', function(data) {
+      // console.log('end', data.clientX, data.clientY);
       var rotation = self._rotationTransitionable.get()[1];
       var snapTo = Math.round(rotation/Math.PI) * Math.PI
       self._rotationTransitionable.set([0, snapTo, 0], {duration : 200, curve : Easing.outBounce});

@@ -33,6 +33,7 @@ function Key() {
     this.body = new Particle({
       position : this.options.position
     });
+    this._rippleTransitionable = new Transitionable(0);
 
     this._rootModifier = new Modifier({
       transform: function() {
@@ -64,9 +65,9 @@ Key.DEFAULT_OPTIONS = {
   propertiesRipple : {
     border : '1px solid rgba(107,203,255,1)',
     '-webkit-box-shadow' : '0px 0px 3px 1px rgba(107,203,255,1)',
-    color : 'rgba(107,203,255,1)',
-    backgroundColor : 'rgba(50,50,50,1)',
+    // backgroundColor : 'rgba(107,203,255,0.2)',
     borderRadius : '50%',
+    pointerEvents : 'none'
   },
   propertiesMiddle : {
     border : '1px solid rgba(107,203,255,1)',
@@ -84,7 +85,6 @@ Key.DEFAULT_OPTIONS = {
     border : '1px solid rgba(107,203,255,0.5)',
     '-webkit-box-shadow' : '0px 0px 1px 1px rgba(107,203,255,1)',
   },
-  opacity : 0.4,
   classesMiddle : ['backface'],
   classesContent : ['backface'],
   classesRipple : ['backface'],
@@ -92,13 +92,16 @@ Key.DEFAULT_OPTIONS = {
   backContent: 'X'
 };
 
-Key.prototype.flipY = function flipX(delay, callback) {
-  // this._rotationalSpring.setOptions({
-  //   anchor : new Quaternion([5 * Math.PI, Math.PI, Math.PI, Math.PI])
-  // })
-  // var oldRotation = this._rotationTransitionable.get();
-  // this._rotationTransitionable.delay(delay);
-  // this._rotationTransitionable.set([0, oldRotation[1] + Math.PI, 0], {duration : 400, curve: Easing.inExpo }, callback);
+Key.prototype.ripple = function ripple() {
+  this._rippleTransitionable.set(3, { duration : 10000}, function() {
+    this._rippleTransitionable.set(0, {duration : 0 });
+  }.bind(this));
+
+  //create a ripple object, 
+  //attach it to a modifier
+  //then push it to the rendered ripples array.  
+  //once the rendered ripple transition finishes
+  //remove it fromt he rendered ripples aray.
 }
 
 /* Private */
@@ -147,12 +150,20 @@ function _createBackLayer() {
 }
 
 function _createRippleLayer() {
-  this.ripple = new Surface({
-    size : [0, 0],
+  this.rippleSurface = new Surface({
+    size : [500, 500],
     properties : this.options.propertiesRipple,
     classes : this.options.classesRipple
   });
-  this._rootNode.add(this.ripple);
+  var rippleModifier = new Modifier({
+    transform: function() {
+      var scale = this._rippleTransitionable.get();
+      var s = Transform.scale(scale, scale, 1);
+      var t = Transform.translate(0, 0, 0);
+      return Transform.multiply(t, s);
+    }.bind(this)
+  })
+  this._rootNode.add(rippleModifier).add(this.rippleSurface);
 }
 
 function _bindEvents() {
@@ -160,6 +171,7 @@ function _bindEvents() {
   self.sync.on('start', function(data) {
     data.keyPosition = self.options.keyPosition;
     self._eventOutput.emit('start', data);
+    self.ripple();
   });
 
   self.sync.on('end', function(data) {
