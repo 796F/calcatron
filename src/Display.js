@@ -30,7 +30,7 @@ function _createScroller() {
   });
   this._scrollview.outputFrom(function(offset){
     // console.log(offset);
-    return Transform.translate(0, offset, -Math.abs(Math.pow(offset, 1.1)));
+    return Transform.translate(0, Math.pow(offset, 0.5), -Math.abs(Math.pow(offset, 1.1)));
   });
   this._rootNode.add(this._scrollview);
 }
