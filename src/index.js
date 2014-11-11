@@ -7,7 +7,7 @@ require('./styles');
 // require('famous-polyfills');
 
 var mainContext = Engine.createContext();
-mainContext.setPerspective(1000);
+mainContext.setPerspective(1200);
 
 var app = new AppView();
 

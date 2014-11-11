@@ -34,9 +34,10 @@ Prism.DEFAULT_OPTIONS = {
     dimensions: [100, 200, 30],
     properties : {
       border : '2px solid rgba(107,203,255,1)',
-      '-webkit-box-shadow' : '0px 0px 6px 2px rgba(107,203,255,1)'
+      '-webkit-box-shadow' : '0px 0px 1px 1px rgba(107,203,255,1)',
+      pointerEvents : 'none'
     },
-    opacity : 0.2,
+    opacity : 0.5,
     classes : ['backface']
 };
 
@@ -68,7 +69,6 @@ function _createFace(params) {
       transform: _generateTransformFunction.call(this, params)
   });
 
-  face.pipe(this._eventOutput);
   this._faces.push(face);
   this.add(faceModifier).add(face);
 }

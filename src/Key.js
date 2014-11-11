@@ -3,14 +3,18 @@ var Surface        = require('famous/core/Surface');
 var Transform      = require('famous/core/Transform');
 var Modifier       = require('famous/core/Modifier');
 var Transitionable = require('famous/transitions/Transitionable');
+var SpringTransition = require('famous/transitions/SpringTransition');
 var Easing = require('famous/transitions/Easing');
 var StateModifier  = require('famous/modifiers/StateModifier');
 var Circle         = require('famous/physics/bodies/Circle');
+var Particle         = require('famous/physics/bodies/Particle');
 var Vector         = require('famous/math/Vector');
 var MouseSync      = require("famous/inputs/MouseSync");
 var TouchSync      = require("famous/inputs/TouchSync");
 var GenericSync    = require("famous/inputs/GenericSync");
-
+var EventEmitter   = require('famous/core/EventEmitter');
+var RotationalSpring = require('famous/physics/forces/RotationalSpring');
+var Quaternion = require('famous/math/Quaternion');
 
 GenericSync.register({
     "keyMouse"  : MouseSync,
@@ -24,21 +28,28 @@ function Key() {
       "keyMouse"  : {},
       "keyTouch"  : {}
     });
+    this._eventInput.pipe(this.sync);
 
-    this.circle = new Circle({
-      radius: this.options.radius,
-      velocity: new Vector(0, 0, 0),
-      position: this.options.position
+    this.body = new Particle({
+      position : this.options.position
     });
 
+    this._rootModifier = new Modifier({
+      transform: function() {
+        var t = this.body.getTransform();
+        var r = Transform.rotate.apply(this, this._rotationTransitionable.get());
+        return Transform.multiply(r, t);
+      }.bind(this)
+    });
+    this._rootNode = this.add(this._rootModifier);
+    
     this._rotationTransitionable = new Transitionable([0, 0, 0]);
+    // this._anchorTransition = new SpringTransition(this.options.position);
 
     _createMiddleLayer.call(this);
     _createFrontLayer.call(this);
     _createBackLayer.call(this);
 
-    this._eventInput.pipe(this.sync);
-    
     _bindEvents.call(this);
 
 }
@@ -56,13 +67,16 @@ Key.DEFAULT_OPTIONS = {
     backgroundColor : 'rgba(50,50,50,1)'
   },
   propertiesContent : {
-    color : 'rgba(107,203,255,1)',
+    // color : 'rgba(107,203,255,1)',
+    color : 'white',
     textAlign : 'center',
-    lineHeight : '35px',
-    fontSize : '30px',
+    lineHeight : '30px',
+    fontSize : '25px',
     fontFamily: 'Avenir',
+    border : '1px solid rgba(107,203,255,0.5)',
+    '-webkit-box-shadow' : '0px 0px 1px 1px rgba(107,203,255,1)',
   },
-  opacity : 0.2,
+  opacity : 0.4,
   classesMiddle : ['backface'],
   classesContent : ['backface'],
   frontContent: 'O',
@@ -70,9 +84,12 @@ Key.DEFAULT_OPTIONS = {
 };
 
 Key.prototype.flipY = function flipX(delay, callback) {
-  var oldRotation = this._rotationTransitionable.get();
-  this._rotationTransitionable.delay(delay);
-  this._rotationTransitionable.set([0, oldRotation[1] + Math.PI, 0], {duration : 400, curve: Easing.inExpo }, callback);
+  // this._rotationalSpring.setOptions({
+  //   anchor : new Quaternion([5 * Math.PI, Math.PI, Math.PI, Math.PI])
+  // })
+  // var oldRotation = this._rotationTransitionable.get();
+  // this._rotationTransitionable.delay(delay);
+  // this._rotationTransitionable.set([0, oldRotation[1] + Math.PI, 0], {duration : 400, curve: Easing.inExpo }, callback);
 }
 
 /* Private */
@@ -83,22 +100,18 @@ function _createMiddleLayer() {
     properties: this.options.propertiesMiddle,
     classes: this.options.classesMiddle
   });
-
-  this._rootModifier = new Modifier({
-    opacity: 0.7,
-    transform: function() {
-      return Transform.multiply(this.circle.getTransform(), Transform.rotate.apply(this, this._rotationTransitionable.get()));
-    }.bind(this)
+  var middleModifier = new Modifier({
+    opacity: 0.9
   });
   this.middle.pipe(this.sync);
-  this._rootNode = this.add(this._rootModifier);
-  this._rootNode.add(this.middle);
+  this._rootNode.add(middleModifier).add(this.middle);
 }
 
 function _createFrontLayer() {
+  var size = (this.options.radius * 2) - 10;
   this.front = new Surface({
     content: this.options.frontContent,
-    size: [this.options.radius * 2, this.options.radius * 2],
+    size: [size, size],
     properties : this.options.propertiesContent,
     classes : this.options.classesContent
   });
@@ -106,14 +119,14 @@ function _createFrontLayer() {
     transform: Transform.translate(0, 0, 5)
   });
   this.front.pipe(this.sync);
-
   this._rootNode.add(frontModifier).add(this.front);
 }
 
 function _createBackLayer() {
+  var size = (this.options.radius * 2) - 10;
   this.back = new Surface({
     content: this.options.backContent,
-    size: [this.options.radius * 2, this.options.radius * 2],
+    size: [size, size],
     properties : this.options.propertiesContent,
     classes : this.options.classesContent
   });
@@ -125,16 +138,21 @@ function _createBackLayer() {
 }
 
 function _bindEvents() {
-  this.sync.on('start', function() {
-    console.log('KEY GOT start');
-  });
-  
-  this.sync.on('end', function() {
-    console.log('KEY GOT end');
+  var self = this;
+  self.sync.on('start', function(data) {
+    data.keyPosition = self.options.keyPosition;
+    self._eventOutput.emit('start', data);
   });
 
-  this.sync.on('update', function() {
-    console.log('KEY GOT update');
+  self.sync.on('end', function(data) {
+    data.keyPosition = self.options.keyPosition;
+    self._eventOutput.emit('end', data);
+  });
+
+  self.sync.on('update', function(data) {
+    // self.body.position.x -= data.delta[0];
+    data.keyPosition = self.options.keyPosition;
+    self._eventOutput.emit('update', data);
   });
 }
 

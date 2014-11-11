@@ -1,6 +1,7 @@
 var View           = require('famous/core/View');
 var Surface        = require('famous/core/Surface');
 var Transitionable = require('famous/transitions/Transitionable');
+var Easing = require('famous/transitions/Easing');
 var Transform      = require('famous/core/Transform');
 var Vector         = require('famous/math/Vector');
 var StateModifier  = require('famous/modifiers/StateModifier');
@@ -13,7 +14,6 @@ var MouseSync      = require("famous/inputs/MouseSync");
 var TouchSync      = require("famous/inputs/TouchSync");
 var ScrollSync     = require("famous/inputs/ScrollSync");
 var GenericSync    = require("famous/inputs/GenericSync");
-
 
 GenericSync.register({
     "mouse"  : MouseSync,
@@ -38,11 +38,11 @@ function AppView() {
     
     this._rootNode = this.add(this._rootModifier);
     
-    _createBackground.call(this);
+    // _createBackground.call(this);
     _createDisplay.call(this);
-    _createKeyboard.call(this);  
-    _createPrism.call(this);
-    _bindEvents.call(this);
+    // _createKeyboard.call(this);  
+    // _createCalculatorBase.call(this);
+    // _bindEvents.call(this);
 }
 
 AppView.prototype = Object.create(View.prototype);
@@ -58,7 +58,7 @@ function _createBackground() {
   this.sync = new GenericSync({
       "mouse"  : {},
       "touch"  : {},
-      "scroll" : {scale : 0.1}
+      "scroll" : {scale : 0.3}
   });
   
   this._background = new Surface({
@@ -68,19 +68,27 @@ function _createBackground() {
   this.add(this._background);
 }
 
-function _createPrism() {
+function _createCalculatorBase() {
   this._prism = new Prism({
-    dimensions: [300, 500, 30]
+    dimensions: [250, 450, 10]
+  });
+  this._rootNode.add(this._prism)
+
+
+  this._boundingBox = new Prism({
+    dimensions: [200, 150, 4]
   });
 
-  // this._prism.pipe(this.sync);
-  this._prism.pipe(this._keyboard._eventInput);
-  this._rootNode.add(this._prism)
+  this._boxModifier = new Modifier({
+    transform: Transform.translate(0, -120, 0)
+  });
+
+  this._rootNode.add(this._boxModifier).add(this._boundingBox);
 }
 
 function _createDisplay() {
   this._display = new Display();
-  this._rootNode.add(this._display);
+  this.add(this._display);
 }
 
 function _createKeyboard() {
@@ -92,12 +100,14 @@ function _bindEvents() {
     var self = this;
 
     self.sync.on('update', function(data) {
-      var dX = data.delta[0];
-      // var dY = data.delta[1];
-
       var old_rotation = self._rotationTransitionable.get();
-      // old_rotation[0] -= dY/100;
-      old_rotation[1] += dX/100;
+      old_rotation[1] += data.delta[0]/100;
+    });
+
+    self.sync.on('end', function(data) {
+      var rotation = self._rotationTransitionable.get()[1];
+      var snapTo = Math.round(rotation/Math.PI) * Math.PI
+      self._rotationTransitionable.set([0, snapTo, 0], {duration : 200, curve : Easing.outBounce});
     });
 }
 
